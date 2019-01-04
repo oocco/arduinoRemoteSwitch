@@ -6,7 +6,7 @@ My first project, appreciate any suggestions you can give me.
 ***
 
 首页，开关操作，设置pwm口占空比。
-home panel, open switch, set pwm duty rtio.
+>home panel, open switch, set pwm duty rtio.
 
 ![deviceOperate](https://github.com/oocco/arduinoRemoteSwitch/blob/master/readme/homePanel.gif)
 ***
