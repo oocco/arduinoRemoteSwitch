@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Index</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .w-3{width: 30%!important;}
+        .w-5{width: 50%!important;}
+        .w-7{width: 70%!important;}
+    </style>
+</head>
+<body>
+    <div id="vuePanel">
+        <ul class="nav nav-tabs">
+            <li role="presentation" v-bind:class="[(panel==='home') ? 'active' : '']"><a v-on:click="panel='home'">Home</a></li>
+            <li role="presentation" v-bind:class="[(panel==='files') ? 'active' : '']"><a v-on:click="panel='files'">Files</a></li>
+            <li role="presentation" v-bind:class="[(panel==='setting') ? 'active' : '']"><a v-on:click="panel='setting'">Setting</a></li>
+        </ul>
+        <br>
+
+        <div v-if="panel==='home'" class="container">
+            <div class="panel panel-default">
+                <div class="panel-heading">Inching Switch</div>
+                <div class="panel-body">
+                    <label v-for="item in deviceList" 
+                        v-bind:class="[(isDeviceType(item.type, 1)) ? '' : 'hidden']"
+                    >
+                        <button 
+                            type="button" 
+                            class="btn btn-primary" 
+                            v-on:click="deviceCommand(item.id, 1)" 
+                        >
+                            {{item.name}} 
+                        </button>&nbsp&nbsp&nbsp&nbsp
+                    </label>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">Self-lock Switch</div>
+                    <div class="panel-body">
+                        <label v-for="item in deviceList" 
+                            v-bind:class="[(isDeviceType(item.type, 2)) ? '' : 'hidden']"
+                        >
+                        <button 
+                            type="button" 
+                            class="btn btn-primary"
+                            v-on:click="deviceCommand(item.id, (function(){if(item.status){return 0;}else{return 1;}})())" 
+                        >
+                            {{item.name}} 
+                            <span class="badge"> {{ (item.status === 0) ? "OFF" : "ON"}}</span>
+                        </button>&nbsp&nbsp&nbsp&nbsp
+                    </label>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">PWM AnalogWrite</div>
+                <div class="panel-body">
+                    <div 
+                        v-for="item in deviceList" 
+                        v-bind:class="[(isDeviceType(item.type, 3)) ? '' : 'hidden']" 
+                    >{{item.name}} 
+                        <input type="range" min="0" max="1000" 
+                            v-bind:name="item.id" 
+                            v-bind:value="item.status" 
+                            v-on:input.onchange="deviceInputCommand">
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">Save to Device</div>
+                <div class="panel-body">
+                    <button 
+                        type="button" 
+                        class="btn btn-primary"
+                        v-on:click="deviceSave();" 
+                    > Save Submit
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div v-else-if="panel==='files'" class="container">
+            <div class="panel panel-default">
+                <div class="panel-heading">Files List</div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Name</th>
+                                <th>Size</th>
+                                <th>Operation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr is="file-item" 
+                                v-for="item in fileList" 
+                                v-bind:key="item.id"
+                                v-bind:item="item" 
+                                v-on:delfile="delFile(item.name)"
+                            >
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <tr class="info">
+                            <td><label>Status: </label>{{flashInformation.status}}</td>
+                            <td><label>Total Space: </label>{{flashInformation.total}}</td>
+                            <td><label>Used Space: </label>{{flashInformation.used}}</td>
+                            <td><label>Occupation: </label>
+                                <meter v-bind:value="flashInformation.occupation"></meter>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">Files Upload</div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-xs-6 ">
+                            <input type="file" id="fileSelect" name="myfiles[]" multiple="multiple">
+                        </div>
+                        <div class="col-xs-6 text-right">
+                            <input class="btn btn-default" type="button" id="upload-button" v-on:click="sendFile();" value="Upload">
+                        </div>
+                        <div class="text-center hidden">
+                            <progress></progress>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-else class="container">
+            <div class="panel panel-default">
+                <div class="panel-heading">Device Setting</div>
+                <div class="panel-body">
+                    <div>
+                        <div class="form-group" v-for="items in deviceList" >
+                            <div class="input-group">
+                                <div class="input-group-addon" 
+                                    v-on:click="delDevice(items.id);" 
+                                    onmouseover="this.style.backgroundColor='#ccc';" 
+                                    onmouseout="this.style.backgroundColor='#eee';"
+                                >ID: {{items.id}}</div>
+                                <label class="form-control w-3">Name</label>
+                                <input type="text" class="form-control w-7" placeholder="Name" v-model="items.name">
+                                <label class="form-control w-3">Type</label>
+                                <select class="form-control w-7" v-model="items.type">
+                                    <option v-for="item in deviceType" v-bind:value="item.type">{{item.name}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-default" type="button" v-on:click="deviceChange();">Submit</button>
+                    <hr>
+                    <div>
+                        <div class="input-group">
+                            <div class="input-group">
+                                <div class="input-group-addon" 
+                                    v-on:click="addDevice();" 
+                                    onmouseover="this.style.backgroundColor='#ccc';" 
+                                    onmouseout="this.style.backgroundColor='#eee';"
+                                >Add{{deviceTempObject.id}}</div>
+                                <label class="form-control w-3">ID</label>
+                                <input type="number" class="form-control w-7" placeholder="Device ID" v-model="deviceTempObject.id">
+                                <label class="form-control w-3">Name</label>
+                                <input type="text" class="form-control w-7" placeholder="Name" v-model="deviceTempObject.name">
+                                <label class="form-control w-3">Type</label>
+                                <select class="form-control w-7" v-model="deviceTempObject.type">
+                                    <option v-for="item in deviceType" v-bind:value="item.type">{{item.name}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">Server</div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">Server</div>
+                            <input type="url" class="form-control" v-model="serverUri" placeholder="Default">
+                            <div class="input-group-addon" v-on:click="setLocalStorage('serverUri',serverUri);">Save</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">Password</div>
+                            <input 
+                                type="password" 
+                                class="form-control" 
+                                v-bind:value="password" 
+                                v-on:input="tempPassword = $event.target.value" 
+                                placeholder="No Validate"
+                            >
+                            <div class="input-group-addon" v-on:click="setPassword();">Save</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">Serial Number</div>
+                            <input type="text" class="form-control" v-model="serialNumber" placeholder="Input">
+                            <div class="input-group-addon" v-on:click="setLocalStorage('serialNumber',serialNumber);">Save</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="loginValidate" style="position: fixed; 
+                                    left: 0;  margin-bottom: 0; bottom: 0; 
+                                    width: 100%; height: 100%; 
+                                    background-color: #000000c9;
+                                    z-index: 100;">
+            <div class="input-group">
+                <div class="input-group-addon">Password</div>
+                <input 
+                    type="password" 
+                    class="form-control" 
+                    v-bind:value="password" 
+                    v-on:input="tempPassword = $event.target.value" 
+                    placeholder="Request Login"
+                >
+                <div class="input-group-addon" v-on:click="loginAuth();">Submit</div>
+            </div>
+        </div>
+        
+        <div class="alert alert-warning"  
+            style="position: fixed; bottom: 0; left: 0; width: 100%; margin-bottom: 0; z-index: 101;" 
+            role="alert" 
+            v-if="msgStatus"
+        >{{msg}}</div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
