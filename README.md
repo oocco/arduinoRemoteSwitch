@@ -10,6 +10,7 @@ use esp8266(wemos d1 mini) realize remote switch, pwm etc..
 
 
 *可自行添加设置gpio功能，立即生效。重启后恢复默认（需自行点击保存）；
+
 *custom the gpio type, must send save command when reboot;
 
 #### 说明 Detail
