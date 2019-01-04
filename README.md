@@ -2,14 +2,15 @@
 use esp8266(wemos d1 mini) realize remote switch, pwm etc..
 
 #### 功能 Features
-1.模拟轻触开关： 开启后 高电平输出500ms后拉低，可连接一个三极管，控制电脑开机关机；
+1.模拟轻触开关/inching switch： 开启后 高电平输出500ms后拉低，可连接一个三极管，控制电脑开机关机；
 
-2.自锁开关： 普通开光,可控制开启关闭状态，接继电器可控制其它设备电源；
+2.自锁开关/self-lock switch： 普通开光,可控制开启关闭状态，接继电器可控制其它设备电源；
 
-3.PWM输出： 输出pwm信号，占空比0-1000， 用于pwm风扇或者灯光调节；
+3.PWM输出/pwm output： 输出pwm信号，占空比0-1000， 用于pwm风扇或者灯光调节；
 
 
 *可自行添加设置gpio功能，立即生效。重启后恢复默认（需自行点击保存）；
+*custom the gpio type, must send save command when reboot;
 
 #### 说明 Detail
 ***
