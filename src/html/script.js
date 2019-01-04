@@ -154,7 +154,7 @@ var vuePanel = new Vue({
                 }else{
                     _this.msg = response.data.status;
                 }
-                _this.ajaxCount = 0;
+                setTimeout(function(){_this.ajaxCount = 0;}, 500);
             })
             .catch(function(error){
                 _this.msg = "Send Failed! ";
@@ -270,7 +270,7 @@ var vuePanel = new Vue({
                     if(_this.ajaxCount<2){
                         _this.deviceCommand(e.target.name, e.target.value);
                     }
-                },1000);
+                },600);
             }
             
         },
