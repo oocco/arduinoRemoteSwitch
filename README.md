@@ -1,8 +1,6 @@
 # arduinoRemoteSwitch
-use esp8266(wemos d1 mini) realize remote switch, pwm etc..
-
 初学者，自学第一个项目，谢谢给我意见。
-My first project, appreciate any suggestions you can give me.
+>My first project, appreciate any suggestions you can give me.
 ***
 
 首页，开关操作，设置pwm口占空比。
