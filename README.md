@@ -15,7 +15,7 @@ use esp8266(wemos d1 mini) realize remote switch, pwm etc..
 
 3.PWM输出/pwm output： 输出pwm信号，占空比0-1000， 用于pwm风扇或者灯光调节；
 
-# 20190924更新
+##### 20190924更新
 4. 添加温度检测功能/Add Temperature Function；
 
 5. 根据温度自动设置风扇转速/Auto PWM Speed；
