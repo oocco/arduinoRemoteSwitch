@@ -5,7 +5,8 @@
 ![deviceOperate](https://github.com/oocco/arduinoRemoteSwitch/blob/master/readme/hardware01.jpg)
 
 ###### 添加外部天线
-https://github.com/oocco/arduinoRemoteSwitch/blob/master/readme/md/add_ipex_antenna.md
+ [添加外部天线/Add Antenna](https://github.com/oocco/arduinoRemoteSwitch/blob/master/readme/md/add_ipex_antenna.md)
+
 
 待更新
 
