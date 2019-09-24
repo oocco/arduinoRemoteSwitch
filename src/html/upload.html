@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Upload</title>
+    <style>
+        html {
+        font-family: sans-serif;
+        -ms-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%;
+        font-size: 10px
+    }
+    
+    body {
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+        font-size: 14px;
+        line-height: 1.42857143;
+        color: #333;
+        background-color: #fff
+    }
+    
+    .container {
+        margin-right: auto;
+        margin-left: auto;
+        padding-left: 15px;
+        padding-right: 15px
+    }
+    
+    table {
+        border: 0;
+        border-spacing: 0;
+        max-width: 100%
+    }
+    
+    .table-bordered {
+        width: 100%;
+        border: 1px solid #ddd;
+        margin-bottom: 20px
+    }
+    
+    td {
+        white-space: nowrap;
+        padding: 2mm
+    }
+    
+    th {
+        text-align: left
+    }
+    
+    .table>tbody>tr>td,.table>tbody>tr>th,.table>thead>tr>td,.table>thead>tr>th {
+        padding: 8px;
+        line-height: 1.42857143;
+        vertical-align: top;
+        border-top: 1px solid #ddd
+    }
+    
+    .table-bordered>tbody>tr>td,.table-bordered>tbody>tr>th,.table-bordered>thead>tr>td,.table-bordered>thead>tr>th {
+        border: 1px solid #ddd
+    }
+    
+    .table-bordered>thead>tr>td,.table-bordered>thead>tr>th {
+        border-bottom-width: 2px
+    }
+    
+    .table-striped>tbody>tr:nth-of-type(odd) {
+        background-color: #f9f9f9
+    }
+    
+    @media (min-width:768px) {
+        .container {
+            width: 750px
+        }
+    }
+    
+    @media (min-width:992px) {
+        .container {
+            width: 970px
+        }
+    }
+    
+    @media (min-width:1200px) {
+        .container {
+            width: 1170px
+        }
+    }
+    
+    .nav {
+        width: 100%;
+        color: #ccc;
+        padding-left: 10;
+        padding-right: 10;
+        list-style: none;
+        background-color: #333;
+        border-radius: 6px;
+        margin-bottom: 20px
+    }
+    
+    a {
+        position: relative;
+        display: block;
+        padding: 10px 15px;
+        text-decoration: none;
+        color: #ccc
+    }
+    
+    .active {
+        color: #fff;
+        background-color: #000
+    }
+    
+    .active a,a:focus,a:hover {
+        color: #fff
+    }
+    
+    .panel {
+        margin-bottom: 20px;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.05);
+        box-shadow: 0 1px 1px rgba(0,0,0,.05)
+    }
+    
+    .panel-body {
+        padding: 15px
+    }
+    
+    .panel-heading {
+        padding: 10px 15px;
+        color: #333;
+        background-color: #f5f5f5;
+        border-color: #ddd;
+        border-top-right-radius: 3px;
+        border-top-left-radius: 3px;
+        border-bottom: 1px solid #ddd
+    }
+    
+    label {
+        display: inline-block;
+        max-width: 100%;
+        margin-bottom: 5px;
+        font-weight: 700
+    }
+    
+    .text-info {
+        color: #31708f
+    }
+    
+    .form-control {
+        display: block;
+        width: auto;
+        height: 34px;
+        padding: 6px 12px;
+        font-size: 14px;
+        line-height: 1.42857143;
+        color: #555;
+        background-color: #fff;
+        background-image: none;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+        transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s
+    }
+    
+    .form-control:focus {
+        border-color: #66afe9;
+        outline: 0;
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6)
+    }
+    
+    .form-group {
+        margin-bottom: 15px
+    }
+    
+    .btn {
+        display: inline-block;
+        margin-bottom: 0;
+        font-weight: 400;
+        text-align: center;
+        vertical-align: middle;
+        -ms-touch-action: manipulation;
+        touch-action: manipulation;
+        cursor: pointer;
+        background-image: none;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        padding: 6px 12px;
+        font-size: 14px;
+        line-height: 1.42857143;
+        border-radius: 4px;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none
+    }
+    
+    .btn-primary {
+        color: #fff;
+        background-color: #337ab7;
+        border-color: #2e6da4
+    }
+    
+    .btn-primary.active,.btn-primary.focus,.btn-primary.hover,.btn-primary:active,.btn-primary:focus,.btn-primary:hover {
+        color: #fff;
+        background-color: #286090;
+        border-color: #122b40
+    }
+    
+    caption {
+        padding-top: 8px;
+        padding-bottom: 8px;
+        color: #777;
+        text-align: left
+    }
+    
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+        border-radius: 4px
+    }
+    
+    .alert-success {
+        background-color: #dff0d8;
+        border-color: #d6e9c6;
+        color: #3c763d
+    }
+    
+    .alert-danger {
+        background-color: #f2dede;
+        border-color: #ebccd1;
+        color: #a94442
+    }
+    
+    .has-error .form-control {
+        border-color: #a94442;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075)
+    }
+    
+    .has-error .form-control:focus {
+        border-color: #843534;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #ce8483;
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #ce8483
+    }
+    
+    .has-error .control-label {
+        color: #a94442
+    }
+    
+    .has-success .form-control {
+        border-color: #3c763d;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075)
+    }
+    
+    .has-success .form-control:focus {
+        border-color: #2b542c;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #67b168;
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #67b168
+    }
+    
+    .has-success .control-label {
+        color: #3c763d
+    }
+    
+    .btn-danger {
+        color: #fff;
+        background-color: #d9534f;
+        border-color: #d43f3a
+    }
+    
+    .btn-danger.active,.btn-danger.focus,.btn-danger.hover,.btn-danger:active,.btn-danger:focus,.btn-danger:hover {
+        color: #fff;
+        background-color: #c9302c;
+        border-color: #761c19
+    }
+    
+    .btnimg {
+        cursor: hand;
+        border-radius: 6px;
+        border: 1px solid #fff
+    }
+    
+    .btnimg:hover {
+        background-color: #f0f0f0;
+        border-color: #0ff;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #ce8483;
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #ce8483
+    }
+    
+    .btnroundimg {
+        cursor: hand;
+        border-radius: 30px
+    }
+    
+    .btnroundimg:hover {
+        background-color: #f0f0f0;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #ce8483;
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 6px #ce8483
+    }
+    
+    .blacklink {
+        color: #000
+    }
+    
+    .blacklink:hover,.filelink:focus {
+        color: #0094ff
+    }
+    
+    input[type=file]::-webkit-file-upload-button {
+        display: inline-block;
+        margin-bottom: 0;
+        font-weight: 400;
+        text-align: center;
+        vertical-align: middle;
+        -ms-touch-action: manipulation;
+        touch-action: manipulation;
+        cursor: pointer;
+        background-image: none;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        padding: 6px 12px;
+        font-size: 14px;
+        line-height: 1.42857143;
+        border-radius: 4px;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        color: #fff;
+        background-color: #5bc0de;
+        border-color: #46b8da
+    }
+    
+    input[type=file]::-webkit-file-upload-button:focus {
+        display: inline-block;
+        margin-bottom: 0;
+        font-weight: 400;
+        text-align: center;
+        vertical-align: middle;
+        -ms-touch-action: manipulation;
+        touch-action: manipulation;
+        cursor: pointer;
+        background-image: none;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        padding: 6px 12px;
+        font-size: 14px;
+        line-height: 1.42857143;
+        border-radius: 4px;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        color: #fff;
+        background-color: #31b0d5;
+        border-color: #1b6d85
+    }
+    
+    input[type=file]::-webkit-file-upload-button:hover {
+        display: inline-block;
+        margin-bottom: 0;
+        font-weight: 400;
+        text-align: center;
+        vertical-align: middle;
+        -ms-touch-action: manipulation;
+        touch-action: manipulation;
+        cursor: pointer;
+        background-image: none;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        padding: 6px 12px;
+        font-size: 14px;
+        line-height: 1.42857143;
+        border-radius: 4px;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        color: #fff;
+        background-color: #31b0d5;
+        border-color: #269abc
+    }
+    
+    .filelink {
+        color: #000
+    }
+    
+    .filelink:focus,.filelink:hover {
+        color: #0094ff
+    }
+    
+    .panel-footer {
+        padding: 10px 15px;
+        color: #31708f;
+        background-color: #f5f5f5;
+        border-color: #ddd;
+        border-top: 1px solid #ddd
+    }
+    
+    .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 12px;
+        height: 12px;
+        animation: spin 2s linear infinite
+    }
+    
+    @keyframes spin {
+        0% {
+            transform: rotate(0)
+        }
+    
+        100% {
+            transform: rotate(360deg)
+        }
+    }
+    
+    .panel-footer {
+        padding: 10px 15px;
+        color: #31708f;
+        background-color: #f5f5f5;
+        border-color: #ddd;
+        border-top: 1px solid #ddd
+    }
+    
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        padding-top: 100px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: #000;
+        background-color: rgba(0,0,0,.4)
+    }
+    
+    .modal-content {
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+        border: 2px solid #337ab7;
+        box-shadow: 0 8px 16px 0 rgba(0,0,0,.2);
+        position: relative;
+        margin: auto;
+        padding: 0;
+        background-color: #fefefe
+    }
+    
+    .modal-header {
+        padding: 2px 16px;
+        color: #0f0f0f;
+        background-color: #f2f2f2;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        border-bottom: 1px solid #cfcfcf
+    }
+    
+    .modal-body {
+        padding: 10px 16px
+    }
+    
+    .modal-footer {
+        padding: 16px 16px;
+        height: 4.5em;
+        color: #0f0f0f;
+        background-color: #f2f2f2;
+        border-top: 1px solid #cfcfcf;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px
+    }
+    .hidden{
+        display: none!important;
+    }
+    @media (min-width:768px) {
+        .modal-content {
+            width: 580px
+        }
+    }
+    
+    @media screen and (max-width:767px) {
+        .modal-content {
+            width: 100%
+        }
+    }
+    </style>
+</head>
+
+<body>
+    <div style="position:absolute;top:0;right:0">V1.1 &nbsp;&nbsp;</div>
+    <center>
+        <h2>It seems you do not have any index.html neither index.html.gz, please upload it or update your firmware if
+            necessary.</h2>
+    </center>
+    <div class="panel" id="SPIFFS">
+        <div class="panel-heading">Flash Filesystem</div>
+        <div class="panel-body"><input type="file" id="file-select" name="myfiles[]" multiple="multiple"> <input class="btn btn-primary"
+                type="button" id="upload-button" onclick="Sendfile();" value="Upload">&nbsp;&nbsp;<progress style="visibility:hidden"
+                name="prg" id="prg" max="100"></progress><br><br>
+            <div class="panel">
+                <div class="panel-body">
+                    <table>
+                        <tr>
+                            <td width="0%"><input class="btn btn-primary" type="button" onclick="SendCommand('list','all');"
+                                    value="Refresh"></td>
+                            <td width="0%">
+                                <div onclick="Createdir()" class="btnimg"><svg width="40" height="40" viewBox="0 0 40 40">
+                                        <rect x="5" y="10" width="30" height="20" rx="2" ry="2" fill="#31b0d5" />
+                                        <rect x="20" y="5" width="15" height="15" rx="2" ry="2" fill="#31b0d5" /><text
+                                            x="15" y="25" font-size="18" font-weight="800" fill="white">+</text></svg></div>
+                            </td>
+                            <td>
+                                <div id="loader" class="loader"></div>
+                            </td>
+                            <td width="100%">
+                                <div id="path" class="info">&nbsp;</div>
+                            </td>
+                        </tr>
+                    </table>
+                    <table class="table table-striped" style="border:1px">
+                        <thead>
+                            <tr>
+                                <th width="0%">Type</th>
+                                <th>Name</th>
+                                <th>Size</th>
+                                <th width="0%"></th>
+                                <th width="100%"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="file_list"></tbody>
+                    </table>
+                </div>
+                <div class="panel-footer" id="status"></div>
+            </div>
+        </div>
+    </div>
+    <div class="panel hidden">
+        <div class="panel-heading">Firmware Update</div>
+        <div class="panel-body">
+            <table>
+                <tr>
+                    <td><input type="file" id="fw-select" name="myfiles[]"></td>
+                    <td><input class="btn btn-primary" type="button" id="uploadfw-button" onclick="Uploadfile();" value="Update"></td>
+                    <td><progress style="visibility:hidden" name="prgfw" id="prgfw" max="100"></progress></td>
+                    <td><span id="msg" style="visibility:hidden">Restarting, please wait....</span><span id="counter"></span></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div id="loginpage" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Identification</h3>
+            </div>
+            <div class="modal-body"><span><span class="modal-text" translate>User:</span> <input class="form-control"
+                        type="text" id="login_user_text" style="width:auto"></span>
+                <hr><span><span class="modal-text" translate>Password:</span> <input class="form-control" type="password"
+                        id="login_password_text" style="width:auto"></span><br></div>
+            <div class="modal-footer"><input type="button" class="btn btn-primary" onclick="SubmitRequest()" value="Submit"></div>
+        </div>
+    </div>
+    <script>
+        function navbar() {
+            var e = "<table><tr>",
+                t = currentpath.split("/"),
+                n = "/",
+                i = 1;
+            for (e += "<td class='btnimg'  onclick=\"currentpath='/'; SendCommand('list','all');\">/</td>"; i < t.length -
+                1;) n += t[i] + "/", e += "<td class='btnimg' onclick=\"currentpath='" + n +
+                "'; SendCommand('list','all');\">" + t[i] + "</td><td>/</td>", i++;
+            return e += "</tr></table>"
+        }
+
+        function trash_icon() {
+            var e = "<svg width='24' height='24' viewBox='0 0 128 128'>";
+            return e += "<rect x='52' y='12' rx='6' ry='6' width='25' height='7' style='fill:red;' />", e +=
+                "<rect x='52' y='16' width='25' height='2' style='fill:white;' />", e +=
+                "<rect x='30' y='18' rx='6' ry='6' width='67' height='100' style='fill:red;' />", e +=
+                "<rect x='20' y='18' rx='10' ry='10' width='87' height='14' style='fill:red;' />", e +=
+                "<rect x='20' y='29' width='87' height='3' style='fill:white;' />", e +=
+                "<rect x='40' y='43' rx='7' ry='7' width='7' height='63' style='fill:white;' />", e +=
+                "<rect x='60' y='43' rx='7' ry='7' width='7' height='63' style='fill:white;' />", e +=
+                "<rect x='80' y='43' rx='7' ry='7' width='7' height='63' style='fill:white;' /></svg>"
+        }
+
+        function back_icon() {
+            return "<svg width='24' height='24' viewBox='0 0 24 24'><path d='M7,3 L2,8 L7,13 L7,10 L17,10 L18,11 L18,15 L17,16 L10,16 L9,17 L9,19 L10,20 L20,20 L22,18 L22,8 L20,6 L7,6 z' stroke='black' fill='white' /></svg>"
+        }
+
+        function select_dir(e) {
+            currentpath += e + "/", SendCommand("list", "all")
+        }
+
+        function compareStrings(e, t) {
+            return e = e.toLowerCase(), t = t.toLowerCase(), e < t ? -1 : e > t ? 1 : 0
+        }
+
+        function dispatchfilestatus(e) {
+            var t = "";
+            if (t = "&nbsp;&nbsp;Status: " + e.status, t += "&nbsp;&nbsp;|&nbsp;&nbsp;Total space: " + e.total, t +=
+                "&nbsp;&nbsp;|&nbsp;&nbsp;Used space: " + e.used, t += "&nbsp;&nbsp;|&nbsp;&nbsp;Occupation: ", t +=
+                "<meter min='0' max='100' high='90' value='" + e.occupation + "'></meter>&nbsp;" + e.occupation + "%",
+                document.getElementById("status").innerHTML = t, t = "", "/" != currentpath) {
+                var n = currentpath.lastIndexOf("/", currentpath.length - 2);
+                t += "<tr style='cursor:hand;' onclick=\"currentpath='" + currentpath.slice(0, n + 1) +
+                    "'; SendCommand('list','all');\"><td >" + back_icon() + "</td><td colspan='4'> Up..</td></tr>"
+            }
+            e.files.sort(function (e, t) {
+                return compareStrings(e.name, t.name)
+            });
+            for (var i = 0; i < e.files.length; i++) "-1" != String(e.files[i].size) && (t += "<TR>", t +=
+                "<td><svg height='24' width='24' viewBox='0 0 24 24' >\t<path d='M1,2 L1,21 L2,22 L16,22 L17,21 L17,6 L12,6 L12,1  L2,1 z' stroke='black' fill='white' /><line x1='12' y1='1' x2='17' y2='6' stroke='black' stroke-width='1'/>",
+                t +=
+                "<line x1='5' y1='10' x2='13' y2='10' stroke='black' stroke-width='1'/>\t<line x1='5' y1='14' x2='13' y2='14' stroke='black' stroke-width='1'/>\t<line x1='5' y1='18' x2='13' y2='18' stroke='black' stroke-width='1'/></svg></td>",
+                t += '<TD class=\'btnimg\' style="padding:0px;"><a href="' + e.path + e.files[i].name +
+                '" target=_blank><div class="blacklink">', t += e.files[i].name, t += "</div></a></TD><TD>", t += e
+                .files[i].size, t += "</TD><TD width='0%'><div class=\"btnimg\" onclick=\"Delete('" + e.files[i].name +
+                "')\">", t += trash_icon(), t += "</div></TD><td></td></TR>");
+            for (var l = 0; l < e.files.length; l++) "-1" == String(e.files[l].size) && (t += "<TR>", t +=
+                "<td><svg height='24' width='24' viewBox='0 0 24 24' ><path d='M19,11 L19,8 L18,7 L8,7 L8,5 L7,4 L2,4 L1,5 L1,22 L19,22 L20,21 L23,11 L5,11 L2,21 L1,22' stroke='black' fill='white' /></svg></td>",
+                t += "<TD  class='btnimg blacklink' style='padding:10px 15px;' onclick=\"select_dir('" + e.files[l]
+                .name + "');\">", t += e.files[l].name, t += "</TD><TD>", t +=
+                "</TD><TD width='0%'><div class=\"btnimg\" onclick=\"Deletedir('" + e.files[l].name + "')\">", t +=
+                trash_icon(), t += "</div></TD><td></td></TR>");
+            document.getElementById("file_list").innerHTML = t, document.getElementById("path").innerHTML = navbar()
+        }
+
+        function Delete(e) {
+            confirm("Confirm deletion of file: " + e) && SendCommand("delete", e)
+        }
+
+        function Deletedir(e) {
+            confirm("Confirm deletion of directory: " + e) && SendCommand("deletedir", e)
+        }
+
+        function Createdir() {
+            var e = prompt("Please enter directory name", "");
+            null != e && SendCommand("createdir", e.trim())
+        }
+
+        function SendCommand(e, t) {
+            var n = new XMLHttpRequest,
+                i = "/files?action=" + e;
+            i += "&filename=" + encodeURI(t), i += "&path=" + encodeURI(currentpath), document.getElementById("loader")
+                .style.visibility = "visible", n.onreadystatechange = function () {
+                    if (4 == n.readyState)
+                        if (200 == n.status) {
+                            var e = JSON.parse(n.responseText);
+                            document.getElementById("loader").style.visibility = "hidden", dispatchfilestatus(e)
+                        } else SubmitRequest()
+                }, n.open("GET", i, !0), n.send()
+        }
+
+        function Sendfile() {
+            function e(e) {
+                if (e.lengthComputable) {
+                    var t = e.loaded / e.total * 100;
+                    document.getElementById("prg").value = t, document.getElementById("upload-button").value =
+                        "Uploading ..." + t.toFixed(0) + "%"
+                }
+            }
+            var t = document.getElementById("file-select").files;
+            if (0 != t.length) {
+                document.getElementById("upload-button").value = "Uploading...", document.getElementById("prg").style.visibility =
+                    "visible";
+                var n = new FormData;
+                n.append("path", currentpath);
+                for (var i = 0; i < t.length; i++) {
+                    var l = t[i];
+                    n.append("myfiles[]", l, currentpath + l.name)
+                }
+                var d = new XMLHttpRequest;
+                d.open("POST", "/files", !0), d.upload.addEventListener("progress", e, !1), d.onload = function () {
+                    if (200 === d.status) {
+                        document.getElementById("upload-button").value = "Upload", document.getElementById("prg").style
+                            .visibility = "hidden", document.getElementById("file-select").value = "";
+                        dispatchfilestatus(JSON.parse(d.responseText))
+                    } else alert("An error occurred!")
+                }, d.send(n)
+            }
+        }
+
+        function Uploadfile() {
+            function e(e) {
+                if (e.lengthComputable) {
+                    var t = e.loaded / e.total * 100;
+                    document.getElementById("prgfw").value = t, document.getElementById("msg").innerHTML =
+                        "Uploading ..." + t.toFixed(0) + "%"
+                }
+            }
+            if (confirm("Confirm Firmware Update ?")) {
+                var t = document.getElementById("fw-select").files;
+                if (0 != t.length) {
+                    document.getElementById("uploadfw-button").style.visibility = "hidden", document.getElementById(
+                            "fw-select").style.visibility = "hidden", document.getElementById("msg").style.visibility =
+                        "visible", document.getElementById("msg").innerHTML = "", document.getElementById("SPIFFS").style
+                        .display = "none", document.getElementById("prgfw").style.visibility = "visible";
+                    for (var n = new FormData, i = 0; i < t.length; i++) {
+                        var l = t[i];
+                        n.append("myfile[]", l, "/" + l.name)
+                    }
+                    var d = new XMLHttpRequest;
+                    d.open("POST", "/updatefw", !0), d.upload.addEventListener("progress", e, !1), d.onload = function () {
+                        if (200 === d.status) {
+                            document.getElementById("uploadfw-button").value = "Upload", document.getElementById(
+                                    "msg").innerHTML = "Restarting, please wait....", document.getElementById(
+                                    "counter").style.visibility = "visible", document.getElementById(
+                                    "uploadfw-button").style.visibility = "hidden", document.getElementById(
+                                    "uploadfw-button").style.width = "0px", document.getElementById("fw-select").value =
+                                "", document.getElementById("fw-select").style.visibility = "hidden", document.getElementById(
+                                    "fw-select").style.width = "0px";
+                            var e = JSON.parse(d.responseText);
+                            if ("1" != e.status && "4" != e.status && "1" != e.status || alert("Update failed"),
+                                "2" == e.status) alert("Update canceled!");
+                            else if ("3" == e.status) {
+                                var t, n = 0,
+                                    i = document.getElementById("prgfw");
+                                i.max = 40, t = setInterval(function () {
+                                    n += 1, document.getElementById("prgfw").value = n, document.getElementById(
+                                        "counter").innerHTML = 41 - n, n > 40 && (clearInterval(t),
+                                        location.reload())
+                                }, 1e3)
+                            } else alert("Update failed!")
+                        } else alert("An error occurred!")
+                    }, d.send(n)
+                }
+            }
+        }
+
+        function RequestLogin() {
+            document.getElementById("loader").style.visibility = "hidden", document.getElementById("loginpage").style.display =
+                "none"
+        }
+
+        function SubmitRequest() {
+            document.getElementById("loginpage").style.display = "none";
+            var e = document.getElementById("login_user_text").value.trim(),
+                t = document.getElementById("login_password_text").value.trim(),
+                n = "/login?USER=" + encodeURIComponent(e) + "&PASSWORD=" + encodeURIComponent(t) + "&SUBMIT=yes",
+                i = new XMLHttpRequest;
+            i.onreadystatechange = function () {
+                4 == i.readyState && 200 != i.status && RequestLogin()
+            }, i.open("GET", n, !0), i.send()
+        }
+        var currentpath = "/";
+        window.onload = function () {
+            SendCommand("list", "all")
+        };
+    </script>
+</body>
+
+</html>

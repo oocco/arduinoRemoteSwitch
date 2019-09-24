@@ -5,23 +5,47 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>Index</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="bootstrap.min.css" rel="stylesheet">
     <style>
         .w-3{width: 30%!important;}
         .w-5{width: 50%!important;}
         .w-7{width: 70%!important;}
+        .table{margin-bottom: 0;}
+        .freeze{opacity: 0.5; pointer-events: none;}
+        .input-group-addon-btn{cursor: pointer; background-color: #337ab7; color: #ffffff;}
+        .input-group-addon-btn:hover{cursor: pointer;background-color: #204d74;}
+        .pointer{cursor: pointer;}
     </style>
 </head>
 <body>
     <div id="vuePanel">
         <ul class="nav nav-tabs">
-            <li role="presentation" v-bind:class="[(panel==='home') ? 'active' : '']"><a v-on:click="panel='home'">Home</a></li>
-            <li role="presentation" v-bind:class="[(panel==='files') ? 'active' : '']"><a v-on:click="panel='files'">Files</a></li>
-            <li role="presentation" v-bind:class="[(panel==='setting') ? 'active' : '']"><a v-on:click="panel='setting'">Setting</a></li>
+            <li role="presentation" v-bind:class="[(panel==='home') ? 'active' : '', 'pointer']"><a v-on:click="panel='home'">Home</a></li>
+            <li role="presentation" v-bind:class="[(panel==='temperature') ? 'active' : '', 'pointer']"><a v-on:click="panel='temperature'">Temperature</a></li>
+            <li role="presentation" v-bind:class="[(panel==='files') ? 'active' : '', 'pointer']"><a v-on:click="panel='files'">Files</a></li>
+            <li role="presentation" v-bind:class="[(panel==='setting') ? 'active' : '', 'pointer']"><a v-on:click="panel='setting'">Setting</a></li>
         </ul>
         <br>
-
+        
+        <!-- Home Panel -->
         <div v-if="panel==='home'" class="container">
+            <div class="panel panel-default">
+                <div class="panel-heading">Temperature
+                    <label style="float: right;">
+                        <input type="checkbox" v-model="temperatureAutoStatus">{{ (temperatureAutoStatus == false) ? "Off" : "On"}}
+                    </label>
+                </div>
+                <div class="panel-body">
+                    <button style="float: right;" 
+                        type="button" 
+                        class="btn btn-primary"
+                        v-on:click="temperatureRefresh();" 
+                    >Refresh
+                    </button>
+                    <label>Temperature: {{temperatureValue}} ℃ </label><br>
+                    <label v-bind:class="{ 'freeze': !temperatureAutoStatus}">Speed: {{temperatureSpeed}} % </label>
+                </div>
+            </div>
             <div class="panel panel-default">
                 <div class="panel-heading">Inching Switch</div>
                 <div class="panel-body">
@@ -60,11 +84,15 @@
                 <div class="panel-body">
                     <div 
                         v-for="item in deviceList" 
-                        v-bind:class="[(isDeviceType(item.type, 3)) ? '' : 'hidden']" 
-                    >{{item.name}} 
-                        <input type="range" min="0" max="1000" 
+                        v-bind:class="[(isDeviceType(item.type, 3)) ? '' : 'hidden' ,(displayDeviceList(item.id)) ? '' : 'freeze']" 
+                    >{{item.name}}: 
+                        <input type="number" min="0" max="1000" style="border: none; float: right; text-align: right;"
+                        v-bind:name="item.id" 
+                        v-model="item.status" 
+                        v-on:input.onchange="deviceInputCommand">
+                        <input type="range" min="0" max="1000"
                             v-bind:name="item.id" 
-                            v-bind:value="item.status" 
+                            v-model="item.status" 
                             v-on:input.onchange="deviceInputCommand">
                     </div>
                 </div>
@@ -78,9 +106,142 @@
                         v-on:click="deviceSave();" 
                     > Save Submit
                     </button>
+                    <button 
+                        type="button" 
+                        class="btn btn-primary"
+                        style="float: right;"
+                        v-on:click="getDevicesList();" 
+                    > Refresh
+                    </button>
                 </div>
             </div>
         </div>
+
+        <!-- Temperature Panel -->
+        <div v-else-if="panel==='temperature'" class="container">
+            <div class="panel panel-default">
+                <div class="panel-heading">Temperature 
+                    <label style="float: right;">
+                        <input type="checkbox" v-model="temperatureAutoStatus">{{ (temperatureAutoStatus == false) ? "Off" : "On"}}
+                    </label>
+                </div>
+                <div class="panel-body">
+                    <button style="float: right;" 
+                        type="button" 
+                        class="btn btn-primary"
+                        v-on:click="temperatureRefresh();" 
+                    > Refresh
+                    </button>
+                    <label>Temperature: {{temperatureValue}} ℃ </label><br>
+                    <label v-bind:class="{ 'freeze': !temperatureAutoStatus}">Speed: {{temperatureSpeed}} % </label>
+                </div>
+            </div>
+            
+            <div class="panel panel-default" v-bind:class="{ 'freeze': !temperatureAutoStatus}">
+                <div class="panel-heading">Auto Temperature</div>
+                <div class="panel-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th style="text-align: right;">Value A</th>
+                                <th style="text-align: right;">Value B</th>
+                                <th style="text-align: right;">Value C</th>
+                                <th style="text-align: right;">Value D</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th>Temperature: </th>
+                                <th v-for="(item, index) in temperatureList.temperature" 
+                                ><input style="width: 100%; border: none; text-align: right;" type="number" v-model="temperatureList.temperature[index]"></th>
+                            </tr>
+                        </tbody>
+                        <tbody>
+                            <tr>
+                                <th>Speed: </th>
+                                <th v-for="(item, index) in temperatureList.speed" 
+                                ><input style="width: 100%; border: none; text-align: right;" type="number" v-model="temperatureList.speed[index]"></th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel-body">
+                    <button 
+                        type="button" 
+                        class="btn btn-primary"
+                        v-on:click="setTemperatureList();" 
+                    > Apply Value
+                    </button>
+                    <button style="float: right;" 
+                        type="button" 
+                        class="btn btn-primary"
+                        v-on:click="getTemperatureList();" 
+                    > Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div class="panel panel-default" v-bind:class="{ 'freeze': !temperatureAutoStatus}">
+                <div class="panel-heading">Bind Deivce</div>
+                <div class="panel-body">
+                    <div class="col-sm-4"
+                        v-for="(item, index) in temperatureList.espid"
+                        v-bind:key="index">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-addon">{{getDeviceName(item)}}</div>
+                                <input 
+                                    class="form-control"
+                                    style="text-align: right;"
+                                    type="number" 
+                                    v-model="temperatureList.espid[index]">
+                                <div class="input-group-addon input-group-addon-btn" 
+                                    v-on:click="setTemperatureEspid(temperatureList.espid[index], index)">
+                                    {{(temperatureList.espid[index] == -1) ? "Add" : "Del"}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <button 
+                        type="button" 
+                        class="btn btn-primary"
+                        v-on:click="setTemperatureId();" 
+                    > Apply Deivce
+                    </button>
+                    
+                    <button style="float: right;" 
+                        type="button" 
+                        class="btn btn-primary"
+                        v-on:click="getTemperatureList();" 
+                    > Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">Save to Deivce</div>
+                <div class="panel-body">
+                    <button 
+                        type="button" 
+                        class="btn btn-primary"
+                        v-on:click="saveTemperatureList();" 
+                    > Save Submit
+                    </button>
+                    <button style="float: right;" 
+                        type="button" 
+                        class="btn btn-primary"
+                        v-on:click="resetTemperatureList();" 
+                    > Reset
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- File Panel -->
         <div v-else-if="panel==='files'" class="container">
             <div class="panel panel-default">
                 <div class="panel-heading">Files List</div>
@@ -135,6 +296,8 @@
                 </div>
             </div>
         </div>
+
+        <!-- Setting Panel -->
         <div v-else class="container">
             <div class="panel panel-default">
                 <div class="panel-heading">Device Setting</div>
@@ -181,13 +344,33 @@
                 </div>
             </div>
             <div class="panel panel-default">
+                
                 <div class="panel-heading">Server</div>
                 <div class="panel-body">
                     <div class="form-group">
                         <div class="input-group">
+                            <div class="input-group-addon">Device Refresh Time</div>
+                            <input type="url" class="form-control" v-model="deviceRefreshTime" placeholder="Default">
+                            <div class="input-group-addon" v-on:click="toggleDeviceRefreshDate();">{{ (deviceRefreshTime == 0) ? "Off" : "On"}}</div>
+                            <div class="input-group-addon input-group-addon-btn" v-on:click="setAutoRefreshTime();">Save</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">Temperature Refresh Time</div>
+                            <input type="url" class="form-control" v-model="temperatureRefreshTime" placeholder="Default">
+                            <div class="input-group-addon" v-on:click="toggleAutoRefreshDate();">{{ (temperatureRefreshTime == 0) ? "Off" : "On"}}</div>
+                            <div class="input-group-addon input-group-addon-btn" v-on:click="setAutoRefreshTime();">Save</div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="form-group">
+                        <div class="input-group">
                             <div class="input-group-addon">Server</div>
                             <input type="url" class="form-control" v-model="serverUri" placeholder="Default">
-                            <div class="input-group-addon" v-on:click="setLocalStorage('serverUri',serverUri);">Save</div>
+                            <div class="input-group-addon input-group-addon-btn" v-on:click="setLocalStorage('serverUri',serverUri);">Save</div>
                         </div>
                     </div>
                     <div class="form-group">
@@ -200,20 +383,22 @@
                                 v-on:input="tempPassword = $event.target.value" 
                                 placeholder="No Validate"
                             >
-                            <div class="input-group-addon" v-on:click="setPassword();">Save</div>
+                            <div class="input-group-addon input-group-addon-btn" v-on:click="setPassword();">Save</div>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
                             <div class="input-group-addon">Serial Number</div>
                             <input type="text" class="form-control" v-model="serialNumber" placeholder="Input">
-                            <div class="input-group-addon" v-on:click="setLocalStorage('serialNumber',serialNumber);">Save</div>
+                            <div class="input-group-addon input-group-addon-btn" v-on:click="setLocalStorage('serialNumber',serialNumber);">Save</div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
 
+        <!-- Login Alert -->
         <div v-if="loginValidate" style="position: fixed; 
                                     left: 0;  margin-bottom: 0; bottom: 0; 
                                     width: 100%; height: 100%; 
@@ -232,14 +417,20 @@
             </div>
         </div>
         
+        <!-- Message Alert -->
         <div class="alert alert-warning"  
             style="position: fixed; bottom: 0; left: 0; width: 100%; margin-bottom: 0; z-index: 101;" 
             role="alert" 
             v-if="msgStatus"
         >{{msg}}</div>
+
+
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+
+
+    <script src="vue.js"></script>
+    <script src="axios.min.js"></script>
     <script src="script.js"></script>
 </body>
 
+</html>
