@@ -15,8 +15,9 @@
 #define EP_ADMIN_NAME           198  //65 bytes 64 +1 = string
 #define EP_ADMIN_PASSWD         263  //65 bytes 64 +1 = string
 #define DEVICE_ID               328  //65 bytes 64 +1 = string
-//empty 393-511
-
+//393-511
+#define DEVICE_TEMPERATURE      393  //65 bytes 64 +1 = string
+//empty 458-511
 /*
 /*DEVICE_IO_STATUS example: 
 /*id,status,type,name|id,status,type,name
@@ -38,6 +39,9 @@
 #define DEVICE_ID_MAX           65
 #define DEVICE_IO_STATUS_MAX    340
 #define ESPIO_MAX               9
+#define DEVICE_TEMPERATURE_MAX  65
+
+#define DEVICE_PWMIO_MAX  5
 
 
 //web interface information

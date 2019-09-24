@@ -12,8 +12,26 @@
 #endif
 #include <WiFiManager.h>
 
+int last_temperature_loop = -1;
+
+bool checkNetwork(){
+    if(!WiFi.isConnected()){
+        Serial.println("WiFi Disconnected, Retry...");
+        WiFi.setAutoReconnect(true);
+        WiFi.reconnect();
+        delay(10000);
+    }
+}
+
+void switchAP(){
+    WiFi.mode(WIFI_AP_STA);
+    WiFi.softAP("ESP_CONTROL","123456789");
+    Serial.println(WiFi.softAPIP());
+}
+
 void setup() {
     espio_class = NULL;
+    auto_tempereture_class = NULL;
     web_interface = NULL;
     Serial.begin(115200);
 
@@ -34,11 +52,21 @@ void setup() {
     //Initializing Device
     Serial.println("Initializing device...");
     espio_class = new INIT_ESPIO();
+    
+    //Initializing Auto Temperature
+    auto_tempereture_class = new AUTO_TEMPERATURE();
+    last_temperature_loop = auto_tempereture_class->get_temperature();
 
     //Initializing Wifi
     WiFiManager wifiManager;
+    
+    wifiManager.setConfigPortalTimeout(180);
+
     Serial.println("Connecting Wifi...");
-    wifiManager.autoConnect("ESP_AUTO_AP");
+    //wifiManager.autoConnect("ESP_AUTO_AP");
+    if(!wifiManager.autoConnect("ESP_AUTO_AP")) {
+        switchAP();
+    }
 
     //File Operation Loading
     SPIFFS.begin();
@@ -48,7 +76,7 @@ void setup() {
     MDNS.begin(HOST_NAME);
     
     Serial.println("web_server.begin()");
-    web_interface = new WEBINTERFACE(80);
+    web_interface = new WEBINTERFACE(8044);
     web_interface->web_server.begin();
     
 }
@@ -56,4 +84,15 @@ void setup() {
 void loop() {
     //web requests
     web_interface->web_server.handleClient();
+    //yield();
+    
+    //Mointor Temperature
+    if(last_temperature_loop != auto_tempereture_class->get_temperature()){
+        auto_tempereture_class->reloadTemperatureAuto();
+        last_temperature_loop = auto_tempereture_class->get_temperature();
+        Serial.print("get_temperature: \t");
+        Serial.println(auto_tempereture_class->get_temperature());
+    }
+    //yield();
+    checkNetwork();
 }

@@ -1,4 +1,32 @@
 #include "httpserver.h"
+/*
+float NTC_A = 1.11492089e-3;
+float NTC_B = 2.372075385e-4;
+float NTC_C = 6.954079529e-8;
+double NTC_Vcc = 3.225;
+unsigned int NTC_Rs = 2000;
+
+int AnalogRead(){
+  int val = 0;
+  for(int i=0; i<20; i++){
+    val +=  analogRead(A0);
+    delay(1);
+  }
+  val = val/20;
+  return val;
+}
+
+int readAnalogPin(){
+  double V_NTC = ((double)AnalogRead()*3.1)/1024;
+  double R_NTC = (NTC_Rs*V_NTC)/(NTC_Vcc-V_NTC);
+
+  R_NTC = log(R_NTC);
+  double Temp = 1/(NTC_A+(NTC_B+(NTC_C*R_NTC*R_NTC))* R_NTC);
+  Temp = Temp-273.15;
+  return (int)Temp;
+}
+*/
+
 
 const char* indexUpload = "\
     <form method='POST' action='/files' enctype='multipart/form-data'>\
@@ -14,6 +42,7 @@ WEBINTERFACE::WEBINTERFACE(int port):web_server(port)
     web_server.on("/files", HTTP_ANY, handleFileCommand, handleFileUpload);
     web_server.on("/device", HTTP_ANY, handleDeviceCommand);
     web_server.on("/validate", HTTP_ANY, handleValidateCommand);
+    web_server.on("/temperature", HTTP_ANY, handleTemperature);
     web_server.onNotFound(handleNotFound);
     fsUploadFile = (File)0;
     upload_status = "";
@@ -273,6 +302,7 @@ void WEBINTERFACE::handleDeviceCommand()
     }
 
     device_command_json = "{\"deviceList\":";
+
     //INIT_ESPIO::setStatus(id_in, status_in);
     //INIT_ESPIO::setStatus(id_in, status_in, msg_in);
     if(web_interface->web_server.hasArg("action")){
@@ -360,6 +390,13 @@ void WEBINTERFACE::handleDeviceCommand()
                 device_command_json += "\"\"";
                 send_device = false;
             }
+        }else if(action == "set_temperature"){
+            if(web_interface->web_server.hasArg("temperature")){
+                json_in = web_interface->web_server.arg("temperature");
+                json_in.replace("!", "");
+                json_in.replace("|", "");
+                
+            }
         }else if(action == "save_eeprom"){
             device_command_json.replace("deviceList", "deviceSave");
             if(espio_class->saveDevice()){
@@ -375,6 +412,17 @@ void WEBINTERFACE::handleDeviceCommand()
             msg = "Reset Success, Please Reboot";
             device_command_json += "\"\"";
         //Default
+        }else if(action == "reboot_esp"){
+            EEPMEM::reset();
+            msg = "Rebooting...";
+            device_command_json += "\"\"";
+            device_command_json += ",\"status\":\"";
+            device_command_json += msg;
+            device_command_json += "\"}";
+            sendJsonData(device_command_json);
+            ESP.restart();
+            return;
+        //Default
         }else{
             msg = "Request Error";
             device_command_json += "\"\"";
@@ -388,6 +436,66 @@ void WEBINTERFACE::handleDeviceCommand()
     device_command_json += "\"}";
 
     sendJsonData(device_command_json);
+    return;
+}
+
+void WEBINTERFACE::handleTemperature(){
+    if(!handleValidatePage()){return;};
+
+    String temperature_command_json;
+    
+    //send temperature value
+    if(web_interface->web_server.hasArg("get_temperature")){
+        temperature_command_json = "{\"temperatureValue\":";
+        temperature_command_json += auto_tempereture_class->last_temperature;
+        temperature_command_json += ",\"temperatureSpeed\":";
+        temperature_command_json += auto_tempereture_class->last_speed;
+        temperature_command_json += "}";
+        sendJsonData(temperature_command_json);
+        return;
+    }
+
+    String msg;
+
+    temperature_command_json = "{\"temperatureList\":";
+
+    if(web_interface->web_server.hasArg("action")){
+        String action = web_interface->web_server.arg("action");
+        String json_in;
+
+        if(web_interface->web_server.hasArg("json")){
+            json_in = web_interface->web_server.arg("json");
+            if(auto_tempereture_class->setJson(json_in)){
+                msg = action;
+                msg += " Success!";
+            }else{
+                msg = "Please Check Json Format!";
+            }
+        }
+
+        if(action == "save"){
+            if(auto_tempereture_class->saveTemperatureAuto()){
+                msg = "Save Success!";
+            }else{
+                msg = "Save Failed!";
+            }
+        }
+
+        if(action == "reset"){
+            auto_tempereture_class->resetEEROM();
+            msg = "Reset Success!";
+        }
+
+    }
+
+    temperature_command_json += auto_tempereture_class->getJson();
+
+    temperature_command_json += ",\"status\":\"";
+    temperature_command_json += msg;
+    temperature_command_json += "\"}";
+
+    sendJsonData(temperature_command_json);
+    return;
 }
 
 String WEBINTERFACE::getContentType(String filename)
@@ -467,8 +575,13 @@ bool WEBINTERFACE::setKey(String key_in, String key_in_old)
     return false;
 }
 
-String WEBINTERFACE::key;
+void WEBINTERFACE::autoTemperature()
+{
+    
+}
 
+
+String WEBINTERFACE::key;
 String WEBINTERFACE::upload_status = "";
 
 WEBINTERFACE * web_interface;

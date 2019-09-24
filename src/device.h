@@ -52,7 +52,34 @@ class INIT_ESPIO
         static bool setStatus(int id_in, int & status_in);
         static bool setStatus(int id_in, int & status_in, String & msg_in);
 
+        static int getType(int id_in);
+
+        String getJson();
+};
+
+class AUTO_TEMPERATURE
+{
+    public:
+        AUTO_TEMPERATURE();
+        static int temperature_value[4];
+        static int temperature_speed[4];
+        static int auto_espio[DEVICE_PWMIO_MAX];
+        static bool auto_status;
+        static int last_temperature;
+        static int last_speed;
+
+        static bool resetEEROM();
+        static bool initializeTemperatureAuto();
+        static bool reloadTemperatureAuto();
+        static bool saveTemperatureAuto();
+        static bool setTemperatureAutoEspio(int id_in);
+
+        static bool setJson(String json_in);
+
+        static int get_temperature();
+
         String getJson();
 };
 
 extern INIT_ESPIO * espio_class;
+extern AUTO_TEMPERATURE * auto_tempereture_class;

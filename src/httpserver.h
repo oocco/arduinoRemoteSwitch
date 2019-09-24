@@ -29,6 +29,8 @@ class WEBINTERFACE
         File fsUploadFile;
         static String upload_status;
 
+        static void autoTemperature();
+
     private:
         static void handleFile(String path);
         static void handleIndex();
@@ -43,6 +45,7 @@ class WEBINTERFACE
 
         static bool handleValidatePage();
         static void handleValidateCommand();
+        static void handleTemperature();
         static bool loginValidate(String key_in);
         static bool setKey(String key_in, String key_old_in);
         static String getKey();

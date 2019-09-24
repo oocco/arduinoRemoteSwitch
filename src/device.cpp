@@ -4,6 +4,22 @@
 const size_t bufferSize = JSON_OBJECT_SIZE(5) + 50;
 DynamicJsonBuffer jsonBuffer(bufferSize);
 
+float NTC_A = 1.11492089e-3;
+float NTC_B = 2.372075385e-4;
+float NTC_C = 6.954079529e-8;
+double NTC_Vcc = 3.225;
+unsigned int NTC_Rs = 2000;
+
+int AnalogRead(){
+  int val = 0;
+  for(int i=0; i<20; i++){
+    val +=  analogRead(A0);
+    delay(1);
+  }
+  val = val/20;
+  return val;
+}
+
 //device io function
 int inching(int pin){
     //pinMode(pin, OUTPUT);
@@ -32,6 +48,10 @@ bool pwmWrite(int pin, int & status){
     return false;
 }
 
+int analogTemperature(){
+    
+}
+
 //class ESPIO method
 ESPIO::ESPIO()
 {
@@ -42,7 +62,7 @@ ESPIO::ESPIO()
 
 bool ESPIO::initialize(int id_in, int status_in, int type_in, String name_in)
 {
-    if((0<=id_in<9) && (espio_class->all_espio_id[id_in] == -1)){
+    if((0<=id_in<ESPIO_MAX) && (espio_class->all_espio_id[id_in] == -1)){
         id = id_in;
         pin = IODEFINE[id];
         type = -1;
@@ -165,6 +185,9 @@ bool INIT_ESPIO::initializeDevice()
     String status;
     if(EEPMEM::read(status, DEVICE_IO_STATUS, DEVICE_IO_STATUS_MAX)){
         //data format: 1!13!0!1!name|2!14!0!1!name
+        Serial.print("device_eeprom_read: \t");
+        Serial.println(status);
+
         int temp_id;
         int temp_type;
         int temp_status;
@@ -271,6 +294,14 @@ bool INIT_ESPIO::setJsonSingle(String json_in)
 {
     JsonObject& root = jsonBuffer.parseObject(json_in);
 
+    if (!root.success()) {
+        Serial.println("auto_tempereture_class->setJson: failed");
+        return false;
+    }
+    if(!root.containsKey("id") || !root.containsKey("name") || !root.containsKey("pin") || !root.containsKey("status") || !root.containsKey("type")){
+        return false;
+    }
+
     int id_in = root["id"];
     String name_in = root["name"];
     int pin_in = root["pin"];
@@ -350,7 +381,351 @@ bool INIT_ESPIO::setStatus(int id_in, int & status_in, String & msg_in)
     return false;
 }
 
+int INIT_ESPIO::getType(int id_in)
+{
+    for(int i=0; i<ESPIO_MAX; i++){
+        if(espio_class->all_device[i].getId() == id_in){
+            return espio_class->all_device[i].getType();
+        }
+    }
+    return -1;
+}
+
+
+
+
+//class AUTO_TEMPERATURE method
+AUTO_TEMPERATURE::AUTO_TEMPERATURE()
+{
+    for(int i=0; i<DEVICE_PWMIO_MAX; i++){
+        auto_tempereture_class->auto_espio[i] = -1;
+    }
+
+    auto_tempereture_class->initializeTemperatureAuto();
+}
+
+bool AUTO_TEMPERATURE::resetEEROM()
+{
+    String json_auto = "{\"temperature\":[40,50,60,65],\"speed\":[0,10,30,100],\"status\":1,\"espid\":[-1,-1,-1,-1,-1]}";
+    auto_tempereture_class->setJson(json_auto);
+    return true;
+}
+
+bool AUTO_TEMPERATURE::initializeTemperatureAuto()
+{
+    String status;
+    if(EEPMEM::read(status, DEVICE_TEMPERATURE, DEVICE_TEMPERATURE_MAX)){
+        //data format: 40!50!60!70    |       0!30!50!100   |       0       !   1!2!3!4!5      |
+        //temperature  A  B  C  D       speed A  B  C  D        status    espid  A B C D E    end
+
+        Serial.print("temperature_eeprom_read: \t");
+        Serial.println(status);
+
+        int temp_count = 0;
+        int temp_type = 0;
+        const char * status_char = status.c_str();
+        int data_size = strlen(status_char);
+
+        String temp_str = "";
+        
+        for(int i=0; i<=data_size; i++){
+            if((byte)status_char[i] == 33 || (byte)status_char[i] == 124){
+                switch (temp_type){
+                    case 0:
+                        auto_tempereture_class->temperature_value[temp_count] = temp_str.toInt();
+                        break;
+                    case 1:
+                        auto_tempereture_class->temperature_speed[temp_count] = temp_str.toInt();
+                        break;
+                    case 2:
+                        if(temp_str.toInt() == 1){
+                            auto_tempereture_class->auto_status = true;
+                        }else{
+                            auto_tempereture_class->auto_status = false;
+                        }
+                        break;
+                    case 3:
+                        auto_tempereture_class->setTemperatureAutoEspio(temp_str.toInt());
+                        
+                        break;
+                    default:
+                        break;
+                }
+                temp_str = "";
+            }
+
+            if((byte)status_char[i] == 33){
+                temp_count++;
+                continue;
+
+            }else if((byte)status_char[i] == 124){
+                temp_count = 0;
+                temp_type++;
+                continue;
+            }
+
+            temp_str += status_char[i];
+            
+        }
+        auto_tempereture_class->last_temperature = -1;
+        auto_tempereture_class->reloadTemperatureAuto();
+        return true;
+    }
+    return false;
+}
+
+bool AUTO_TEMPERATURE::reloadTemperatureAuto()
+{
+    //get device temperature
+    int temp_temperature = auto_tempereture_class->get_temperature();
+    //Serial.print("temp_temperature:\t");
+    //Serial.println(temp_temperature);
+
+    //set temperature = 100 when value error
+    if(temp_temperature == -1){
+        temp_temperature = 100;
+    }
+    //jump program command when temperature equal last value
+    if(temp_temperature == auto_tempereture_class->last_temperature){
+        return true;
+    }
+    auto_tempereture_class->last_temperature = temp_temperature;
+
+    double temp_speed = 0;
+    int temp_point = 0;
+
+    int step_temperature = 0;
+    double step_speed = 0;
+
+    //get speed value
+    for(int i=0; i<4; i++){
+        if(auto_tempereture_class->temperature_value[i]>temp_temperature){
+            temp_point = i;
+            break;
+        }else if(i == 3){
+            temp_point = 4;
+        }
+        temp_speed = auto_tempereture_class->temperature_speed[i];
+    }
+    //Serial.print("temp_point:\t");
+    //Serial.println(temp_point);
+    if(temp_point==0){
+        temp_speed = 0;
+    }else if(temp_point != 4){
+        step_temperature = auto_tempereture_class->temperature_value[temp_point]-auto_tempereture_class->temperature_value[(temp_point-1)];
+        step_speed = auto_tempereture_class->temperature_speed[temp_point]-auto_tempereture_class->temperature_speed[(temp_point-1)];
+        step_speed = step_speed/step_temperature;
+
+        step_temperature = temp_temperature - auto_tempereture_class->temperature_value[(temp_point-1)];
+
+        temp_speed = temp_speed + (step_speed*step_temperature);
+    }
+    //Serial.print("step_speed:\t");
+    //Serial.println(step_speed);
+
+    //set speed = 100 when value error
+    if(temp_speed<0 || temp_speed>100){
+        temp_speed = 100;
+    }
+
+    int temp_speed_int = temp_speed*10;
+    auto_tempereture_class->last_speed = temp_speed_int;
+    //Serial.print("temp_speed:\t");
+    //Serial.println(temp_speed_int);
+    //Serial.println("");
+
+    //set espid status
+    if(auto_tempereture_class->auto_status){
+        for(int i=0; i<DEVICE_PWMIO_MAX; i++){
+            if(auto_tempereture_class->auto_espio[i] == -1){
+                continue;
+            }
+            espio_class->setStatus(auto_tempereture_class->auto_espio[i], temp_speed_int);
+        }
+        return true;
+    }
+    return false;
+}
+
+bool AUTO_TEMPERATURE::saveTemperatureAuto()
+{
+    String eeprom_format = "";
+    //40!50!60!70|0!30!50!100|0|1!2!3!4!5|
+    for(int i=0; i<4; i++){
+        eeprom_format += auto_tempereture_class->temperature_value[i];
+        if(i==3){break;}
+        eeprom_format += "!";
+    }
+    eeprom_format += "|";
+    for(int i=0; i<4; i++){
+        eeprom_format += auto_tempereture_class->temperature_speed[i];
+        if(i==3){break;}
+        eeprom_format += "!";
+    }
+    eeprom_format += "|";
+    if(auto_tempereture_class->auto_status){
+        eeprom_format += "1";
+    }else{
+        eeprom_format += "0";
+    }
+    
+    eeprom_format += "|";
+    for(int i=0; i<DEVICE_PWMIO_MAX; i++){
+        eeprom_format += auto_tempereture_class->auto_espio[i];
+        if((i+1)==DEVICE_PWMIO_MAX){break;}
+        eeprom_format += "!";
+    }
+
+    eeprom_format += "|";
+
+    Serial.print("temperature_eeprom_format:\t");
+    Serial.println(eeprom_format);
+    if(EEPMEM::write(eeprom_format, DEVICE_TEMPERATURE)){
+        return true;
+    }
+    return false;
+}
+
+bool AUTO_TEMPERATURE::setTemperatureAutoEspio(int id_in)
+{
+    if(id_in == -1){
+        return false;
+    }
+
+    for(int i=0; i<DEVICE_PWMIO_MAX; i++){
+        if(id_in == auto_tempereture_class->auto_espio[i]){
+            return false;
+            break;
+        }
+    }
+
+    for(int i=0; i<DEVICE_PWMIO_MAX; i++){
+        if(auto_tempereture_class->auto_espio[i] == -1){
+            if(espio_class->getType(id_in) == PWMWRITE){
+                auto_tempereture_class->auto_espio[i] = id_in;
+                return true;
+                //break;
+            }
+        }
+    }
+    return false;
+}
+
+bool AUTO_TEMPERATURE::setJson(String json_in)
+{
+    JsonObject& root = jsonBuffer.parseObject(json_in);
+
+    if (!root.success()) {
+        Serial.println("auto_tempereture_class->setJson: failed");
+        return false;
+    }
+    if(root.containsKey("temperature")){
+        for(int i=0; i<4; i++){
+            auto_tempereture_class->temperature_value[i] = root["temperature"][i];
+        }
+    }
+
+    if(root.containsKey("speed")){
+        for(int i=0; i<4; i++){
+            auto_tempereture_class->temperature_speed[i] = root["speed"][i];
+        }
+    }
+
+    if(root.containsKey("status")){
+        if(root["status"] == 1){
+            auto_tempereture_class->auto_status = true;
+        }else{
+            auto_tempereture_class->auto_status = false;
+        }
+    }
+
+    if(root.containsKey("espid")){
+        //clear all espid
+        for(int i=0; i<DEVICE_PWMIO_MAX; i++){
+            auto_tempereture_class->auto_espio[i] = -1;
+        }
+        for(int i=0; i<DEVICE_PWMIO_MAX; i++){
+            auto_tempereture_class->setTemperatureAutoEspio(root["espid"][i]);
+        }
+    }
+
+    auto_tempereture_class->last_temperature = -1;
+    auto_tempereture_class->reloadTemperatureAuto();
+    
+    return true;
+}
+
+int AUTO_TEMPERATURE::get_temperature()
+{
+    double V_NTC = ((double)AnalogRead()*3.1)/1024;
+    double R_NTC = (NTC_Rs*V_NTC)/(NTC_Vcc-V_NTC);
+
+    R_NTC = log(R_NTC);
+    double Temp = 1/(NTC_A+(NTC_B+(NTC_C*R_NTC*R_NTC))* R_NTC);
+    Temp = Temp-273.15;
+
+    if(0<Temp<120){
+        return (int)Temp;
+    }
+    return -1;
+    //return rand() % 100;
+}
+
+String AUTO_TEMPERATURE::getJson()
+{
+    String json;
+    json = "{\"temperature\":";
+    json += "[";
+    for(int i=0; i<4; i++){
+        json += auto_tempereture_class->temperature_value[i];
+        if(i==3){break;}
+        json += ",";
+    }
+    json += "]";
+
+    json += ",\"speed\":";
+    json += "[";
+    for(int i=0; i<4; i++){
+        json += auto_tempereture_class->temperature_speed[i];
+        if(i==3){break;}
+        json += ",";
+    }
+    json += "]";
+
+    json += ",\"status\":";
+    if(auto_tempereture_class->auto_status){
+        json += "1";
+    }else{
+        json += "0";
+    }
+
+    json += ",\"espid\":";
+    json += "[";
+    for(int i=0; i<DEVICE_PWMIO_MAX; i++){
+        json += auto_tempereture_class->auto_espio[i];
+        if((i+1)==DEVICE_PWMIO_MAX){break;}
+        json += ",";
+    }
+
+    json += "]";
+    json += "}";
+
+    Serial.print("temperature_json_format:\t");
+    Serial.println(json);
+
+    return json;
+}
+
 int INIT_ESPIO::all_espio_id[ESPIO_MAX] = {};
 ESPIO INIT_ESPIO::all_device[ESPIO_MAX] = {};
 
+int AUTO_TEMPERATURE::temperature_value[4] = {};
+int AUTO_TEMPERATURE::temperature_speed[4] = {};
+int AUTO_TEMPERATURE::auto_espio[DEVICE_PWMIO_MAX] = {};
+
+bool AUTO_TEMPERATURE::auto_status = false;
+int AUTO_TEMPERATURE::last_temperature = -1;
+int AUTO_TEMPERATURE::last_speed = -1;
+
 INIT_ESPIO * espio_class;
+AUTO_TEMPERATURE * auto_tempereture_class;
