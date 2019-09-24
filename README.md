@@ -1,3 +1,7 @@
+# arduinoRemoteSwitch
+use esp8266(wemos d1 mini) realize remote switch, pwm etc..
+***
+
 #### 有什么用？
 用在电脑内部，使用http服务器控制电脑远程开关机，测量温度并控制电脑风扇速度。
 
@@ -8,9 +12,7 @@
 
 
 待更新
-
-# arduinoRemoteSwitch
-use esp8266(wemos d1 mini) realize remote switch, pwm etc..
+***
 
 #### 功能 Features
 1.模拟轻触开关/inching switch： 开启后 高电平输出500ms后拉低，可连接一个三极管，控制电脑开机关机；
