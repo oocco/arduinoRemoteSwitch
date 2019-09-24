@@ -1,4 +1,4 @@
-##添加外部天线/Add Antenna
+## 添加外部天线/Add Antenna
 因为ESP8266模块放置在电脑机箱内部，影响wifi信号导致无法连接网络，所以可以改为外置IPEX接口的天线。
 ![](https://github.com/oocco/arduinoRemoteSwitch/raw/master/readme/add_ipex_antenna_01.jpg)
 
